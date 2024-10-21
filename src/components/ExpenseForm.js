@@ -1,7 +1,9 @@
 import { React, useState, useEffect } from "react";
 import { Col, Row, Form, Button } from "react-bootstrap";
+import { DeleteExpense, EditExpense, NewExpense } from "../services/expenses";
+import { useDispatch } from "react-redux";
 
-export default () => {
+export default ({ expense, setIsEditing }) => {
   const descriptions = [
     "Groceries",
     "Credit Card",
@@ -12,12 +14,31 @@ export default () => {
   const [amount, setAmount] = useState(0);
   const [description, setDescription] = useState(descriptions[0]);
   const [isNewExpense, setIsNewExpense] = useState(true);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (expense !== undefined) {
+      setIsNewExpense(false);
+      setAmount(expense.amount);
+      setDescription(expense.description);
+    } else {
+      setIsNewExpense(true);
+    }
+  }, [expense]);
+
   return (
     <Form
       onSubmit={(event) => {
         event.preventDefault();
         if (isNewExpense) {
+          NewExpense(dispatch, { description: description, amount: amount });
         } else {
+          EditExpense(dispatch, {
+            id: expense.id,
+            description: description,
+            amount: amount,
+          });
+          setIsEditing(false);
         }
       }}
     >
@@ -50,11 +71,27 @@ export default () => {
               </Button>
             ) : (
               <div>
-                <Button variant="primary">Delete</Button>
-                <Button variant="primary" type="submit">
+                <Button
+                  style={{ marginRight: "2px" }}
+                  variant="danger"
+                  onClick={() => DeleteExpense(dispatch, expense)}
+                >
+                  Delete
+                </Button>
+                <Button
+                  style={{ marginRight: "2px" }}
+                  variant="success"
+                  type="submit"
+                >
                   Save
                 </Button>
-                <Button variant="primary">Cancel</Button>
+                <Button
+                  style={{ marginRight: "2px" }}
+                  variant="default"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
               </div>
             )}
           </div>
